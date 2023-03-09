@@ -1,0 +1,17 @@
+export const rsaPrivateKey = {
+    "kty": "RSA",
+    "n": "Xpqbk05_tU1HJ0sEBt0_FikWos790YK1CjfC_jIvwSuR8rTnxprn3NATc-LnvNwEeEAhFsQ_srk09t15dFct-ObPypVJdNmTuj9pOovFS14XnYhI4LfYL7ZX7GXwHIfu6pTma-L1ngkW8AQqjOGMuUFM1ZaITm41Qf3zZQsFTTgLk6DexBn79n5lkkwFt2wTnMefZsvpuYxGGtfFJbi0Zd5Yqb22n8DsZClj_aXnefRA3W37D_8JHg3CXo1XGepWFMCV-2WF1uWvi_GmsYMd7eAP_dD-Fr8iIxtbPIgMrxPcjCEKQCw7OUUxrbcAFKEgItQHwgYw2GQefCyUqu84MQ",
+    "e": "AQAB",
+    "d": "C0uogbkgtHQKp91kGLG4A5xaUIwocCiMFzE7PgCeBRF_tpv1BJigUJQjjnWsN7eJbRYzHTXHaT6F3WfqRYLXQV3Ft6mFgMctxVIm7U-c-fe9GBkaooIw9NlvvBEbzzxHwYiPzpflvb3WGEhXEEUp-UCbvPDhS4QLJdr9gbYEJwkBQp0CldJ_L7Zup68zkovXTW1Yyx23wAJHwVZee8GwDQYBf8NtipemYfDvnchhoyeDr4jnGYcg8u6hoCL_TnBNpldAcM6y9wLFLbMEOcyscgs_bCXOdFWZN3scXNxhtYimnwccjHc-PWaawD047VMbFKayj1gyV0GL-iQRI0a7tQ",
+    "p": "u2Ja2vidB_E46LMpllz8m9bWtFRCkfOFd_-f4LmdbfzItmP0I-luNuop7tzdk6lFTLqODoalurO9S2QZOACSwv5PIUztK9M8KmPeopQkpRJ6PpW7O1ncVMamkeor2yERELiQIKDoFINp-teOO_LGmZmUlCJENUjA7EkpPUrTO6M",
+    "q": "gT7oNmlWpJSDV09rWYpI7wuzzFZW3fMK1jt4zlXJ80G5yLA2vDpKscKmICRZPnePngbqkYpKRjOgofELOHjaEwzcWFCrdf7k9VK6p05yIE4TfXpdlaarl8UzdVdwfcjz588PX1jNsox54VKtB7Rzjlz1R0KfzhquxRHvoyqXOhs",
+    "dp": "KmbxREep0RhG1nFkYcAc8W7GGvxOLBS9CRBxLzsRYsgm6w7nOhEifY6zenfENBvDsL8uUh8p9XuixCKcik2m6DT_1vs_WAFuxfDfek6nlCsAOpVLTvzgnNZu7uncjrOG1w_MnXWLzsiF_Ns2Nl6TjkJwmqy-XoheD5nmmRYLgp0",
+    "dq": "Yb1J7IQCwtmQ7cEgpIkgGK6X3OpaLOS0iEhXVmqoG27T6YHhEr1eaUmTSfFTEBton5AJaeDTxH0cd_sKij1SZV-vbpYq5EPLr_5NK2L2iZmhwZ19EkQFtfOqs41Zg7YpRV9f97H3dJQpQ427Tn1XegywbKBkq3-gNWYX_COkU4s",
+    "qi": "EvUz-Y-h9xBVAnme2nLkMu4r5_cW4pFqGgXFL7xMqDjxiUuDKL-iuopYSNokm--ngnkzxUfmk9l-i3RW6fnMn5rKK9kUM9szIvLfwFlVjvrnWpdsSAPCnUmTalR9pjLW7rKE1P7xxevvIhrS5i9OOdPx8DHcYUMPmVG7GctD8JA"
+}
+
+export const rsaPublicKey = {
+    "kty": "RSA",
+    "n": "Xpqbk05_tU1HJ0sEBt0_FikWos790YK1CjfC_jIvwSuR8rTnxprn3NATc-LnvNwEeEAhFsQ_srk09t15dFct-ObPypVJdNmTuj9pOovFS14XnYhI4LfYL7ZX7GXwHIfu6pTma-L1ngkW8AQqjOGMuUFM1ZaITm41Qf3zZQsFTTgLk6DexBn79n5lkkwFt2wTnMefZsvpuYxGGtfFJbi0Zd5Yqb22n8DsZClj_aXnefRA3W37D_8JHg3CXo1XGepWFMCV-2WF1uWvi_GmsYMd7eAP_dD-Fr8iIxtbPIgMrxPcjCEKQCw7OUUxrbcAFKEgItQHwgYw2GQefCyUqu84MQ",
+    "e": "AQAB"
+}
