@@ -1,15 +1,12 @@
 {
-  "name": "my-webpack-project",
+  "name": "@mobilemed-dev/mob-oauth2-jwt-validator",
   "version": "1.0.0",
-  "description": "My webpack project",
+  "description": "A package to validate JWT tokens from OAuth2 providers.",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "build": "webpack --mode=production --node-env=production",
-    "build:dev": "webpack --mode=development",
-    "build:prod": "webpack --mode=production --node-env=production",
-    "watch": "webpack --watch"
+    "build": "webpack --mode production"
   },
   "keywords": [
     "OAuth2",
@@ -38,7 +35,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
-    "@babel/preset-env": "^7.20.2",
     "@jest/globals": "^29.5.0",
     "@webpack-cli/generators": "^3.0.1",
     "babel-loader": "^9.1.2",
