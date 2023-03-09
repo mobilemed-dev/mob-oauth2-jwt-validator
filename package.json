@@ -1,12 +1,12 @@
 {
-  "name": "@mobilemed-dev/mob-oauth2-jwt-validator",
-  "version": "1.0.0",
+  "name": "mob-oauth2-jwt-validator",
+  "version": "1.0.1",
   "description": "A package to validate JWT tokens from OAuth2 providers.",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "build": "webpack --mode production"
+    "build": "babel src --extensions \".ts,.js\" --copy-files --out-dir dist"
   },
   "keywords": [
     "OAuth2",
@@ -34,10 +34,10 @@
     "jwk-to-pem": "^2.0.5"
   },
   "devDependencies": {
+    "@babel/cli": "^7.21.0",
     "@babel/core": "^7.21.0",
-    "@jest/globals": "^29.5.0",
-    "@webpack-cli/generators": "^3.0.1",
-    "babel-loader": "^9.1.2",
+    "@babel/plugin-transform-modules-commonjs": "^7.21.2",
+    "@babel/preset-env": "^7.20.2",
     "jest": "^29.5.0",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
