@@ -8,26 +8,26 @@ import ConfigurationNotLoadedError from "./errors/ConfigurationNotLoadedError.js
 import InvalidTokenError from "./errors/InvalidTokenTypeError.js";
 
 class TokenValidator {
-    static #issuer = null
-    static #jwks = null
+    static issuer = null
+    static jwks = null
 
-    static #setOauth(oAuth2Issuer) {
+    static setOauth = function(oAuth2Issuer) {
         if (!oAuth2Issuer || typeof oAuth2Issuer !== 'string') {
             throw new BadFieldError("OAuth2 Issuer was not sent or is invalid. oAuth2Issuer must be a valid string URI.")
         }
 
         oAuth2Issuer = oAuth2Issuer.replace(/\/$/, '')
 
-        TokenValidator.#issuer = oAuth2Issuer
+        TokenValidator.issuer = oAuth2Issuer
     }
 
-    static async loadConfiguration({oAuth2Issuer}) {
-        if (TokenValidator.#jwks) {
+    static loadConfiguration = async function ({oAuth2Issuer}) {
+        if (TokenValidator.jwks) {
             return
         }
 
-        TokenValidator.#setOauth(oAuth2Issuer)
-        const url = `${TokenValidator.#issuer}/.well-known/jwks.json`
+        TokenValidator.setOauth(oAuth2Issuer)
+        const url = `${TokenValidator.issuer}/.well-known/jwks.json`
         let response = {}
 
         try {
@@ -37,15 +37,15 @@ class TokenValidator {
         }
 
         if (response.data && response.data.keys && Array.isArray(response.data.keys) && response.data.keys.length) {
-            TokenValidator.#jwks = jwkToPem(response.data.keys[response.data.keys.length - 1])
+            TokenValidator.jwks = jwkToPem(response.data.keys[response.data.keys.length - 1])
             return
         }
 
         throw new JWTKeysIsNotSetOrInvalidError()
     }
 
-    static validate(token) {
-        if (!TokenValidator.#jwks) {
+    static validate = function(token) {
+        if (!TokenValidator.jwks) {
             throw new ConfigurationNotLoadedError()
         }
 
@@ -54,7 +54,7 @@ class TokenValidator {
         }
 
         try {
-            const decoded = verify(token, TokenValidator.#jwks)
+            const decoded = verify(token, TokenValidator.jwks)
 
             return !!decoded
         } catch (error) {
@@ -62,9 +62,9 @@ class TokenValidator {
         }
     }
 
-    static dispose() {
-        TokenValidator.#issuer = null
-        TokenValidator.#jwks = null
+    static dispose = function() {
+        TokenValidator.issuer = null
+        TokenValidator.jwks = null
     }
 }
 
