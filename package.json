@@ -1,12 +1,12 @@
 {
   "name": "mob-oauth2-jwt-validator",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A package to validate JWT tokens from OAuth2 providers.",
-  "main": "src/index.js",
+  "main": "distribution/index.js",
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "build": "babel src --extensions \".ts,.js\" --copy-files --out-dir dist"
+    "build": "babel src --extensions \".ts,.js\" --copy-files --out-dir distribution"
   },
   "keywords": [
     "OAuth2",

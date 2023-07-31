@@ -14,23 +14,23 @@ var _ConfigurationNotLoadedError = _interopRequireDefault(require("./errors/Conf
 var _InvalidTokenTypeError = _interopRequireDefault(require("./errors/InvalidTokenTypeError.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 class TokenValidator {
-  static #issuer = null;
-  static #jwks = null;
-  static #setOauth(oAuth2Issuer) {
+  static issuer = null;
+  static jwks = null;
+  static setOauth(oAuth2Issuer) {
     if (!oAuth2Issuer || typeof oAuth2Issuer !== 'string') {
       throw new _BadFieldError.default("OAuth2 Issuer was not sent or is invalid. oAuth2Issuer must be a valid string URI.");
     }
     oAuth2Issuer = oAuth2Issuer.replace(/\/$/, '');
-    TokenValidator.#issuer = oAuth2Issuer;
+    TokenValidator.issuer = oAuth2Issuer;
   }
   static async loadConfiguration({
     oAuth2Issuer
   }) {
-    if (TokenValidator.#jwks) {
+    if (TokenValidator.jwks) {
       return;
     }
-    TokenValidator.#setOauth(oAuth2Issuer);
-    const url = `${TokenValidator.#issuer}/.well-known/jwks.json`;
+    TokenValidator.setOauth(oAuth2Issuer);
+    const url = `${TokenValidator.issuer}/.well-known/jwks.json`;
     let response = {};
     try {
       response = await _axios.default.get(url);
@@ -38,28 +38,28 @@ class TokenValidator {
       throw new _OAuthNotRespondingError.default();
     }
     if (response.data && response.data.keys && Array.isArray(response.data.keys) && response.data.keys.length) {
-      TokenValidator.#jwks = (0, _jwkToPem.default)(response.data.keys[response.data.keys.length - 1]);
+      TokenValidator.jwks = (0, _jwkToPem.default)(response.data.keys[response.data.keys.length - 1]);
       return;
     }
     throw new _JWTKeysIsNotSetOrInvalidError.default();
   }
   static validate(token) {
-    if (!TokenValidator.#jwks) {
+    if (!TokenValidator.jwks) {
       throw new _ConfigurationNotLoadedError.default();
     }
     if (!token || typeof token !== 'string') {
       throw new _InvalidTokenTypeError.default();
     }
     try {
-      const decoded = (0, _jsonwebtoken.verify)(token, TokenValidator.#jwks);
+      const decoded = (0, _jsonwebtoken.verify)(token, TokenValidator.jwks);
       return !!decoded;
     } catch (error) {
       return false;
     }
   }
   static dispose() {
-    TokenValidator.#issuer = null;
-    TokenValidator.#jwks = null;
+    TokenValidator.issuer = null;
+    TokenValidator.jwks = null;
   }
 }
 var _default = TokenValidator;
