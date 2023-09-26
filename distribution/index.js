@@ -3,9 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.TokenValidator = void 0;
 var _axios = _interopRequireDefault(require("axios"));
-var _jsonwebtoken = require("jsonwebtoken");
+var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
 var _jwkToPem = _interopRequireDefault(require("jwk-to-pem"));
 var _BadFieldError = _interopRequireDefault(require("./errors/BadFieldError.js"));
 var _OAuthNotRespondingError = _interopRequireDefault(require("./errors/OAuthNotRespondingError.js"));
@@ -16,24 +16,35 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return typeof key === "symbol" ? key : String(key); }
 function _toPrimitive(input, hint) { if (typeof input !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (typeof res !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-class TokenValidator {}
-_defineProperty(TokenValidator, "issuer", null);
-_defineProperty(TokenValidator, "jwks", null);
-_defineProperty(TokenValidator, "setOauth", function (oAuth2Issuer) {
-  if (!oAuth2Issuer || typeof oAuth2Issuer !== 'string') {
-    throw new _BadFieldError.default("OAuth2 Issuer was not sent or is invalid. oAuth2Issuer must be a valid string URI.");
+const {
+  verify
+} = _jsonwebtoken.default;
+class TokenValidator {
+  static validatePoolsConfiguration(poolsConfiguration) {
+    if (!poolsConfiguration.poolId) return false;
+    if (!poolsConfiguration.tenant) return false;
+    if (poolsConfiguration.clientId !== undefined && !Array.isArray(poolsConfiguration.clientId) && typeof poolsConfiguration.clientId !== 'string') return false;
+    return true;
   }
-  oAuth2Issuer = oAuth2Issuer.replace(/\/$/, '');
-  TokenValidator.issuer = oAuth2Issuer;
-});
-_defineProperty(TokenValidator, "loadConfiguration", async function ({
-  oAuth2Issuer
-}) {
-  if (TokenValidator.jwks) {
-    return;
+  static mapToken(token) {
+    const info = token.split('.')[1];
+    const base64 = info.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = Buffer.from(base64, 'base64').toString('binary');
+    const json = JSON.parse(decoded);
+    json.poolId = json.iss.split('/')[3];
+    return json;
   }
-  TokenValidator.setOauth(oAuth2Issuer);
-  const url = `${TokenValidator.issuer}/.well-known/jwks.json`;
+}
+exports.TokenValidator = TokenValidator;
+_defineProperty(TokenValidator, "jwks", {});
+_defineProperty(TokenValidator, "poolsConfiguration", {});
+_defineProperty(TokenValidator, "oAuth2IssuerBaseUrl", "");
+_defineProperty(TokenValidator, "getJwks", async function (oAuth2IssuerBaseUrl, poolConfiguration) {
+  if (TokenValidator.jwks[poolConfiguration.poolId]) {
+    return TokenValidator.jwks[poolConfiguration.poolId];
+  }
+  const issuer = `${oAuth2IssuerBaseUrl}/${poolConfiguration.poolId}/${poolConfiguration.tenant}`;
+  const url = `${issuer}/.well-known/jwks.json`;
   let response = {};
   try {
     response = await _axios.default.get(url);
@@ -41,28 +52,65 @@ _defineProperty(TokenValidator, "loadConfiguration", async function ({
     throw new _OAuthNotRespondingError.default();
   }
   if (response.data && response.data.keys && Array.isArray(response.data.keys) && response.data.keys.length) {
-    TokenValidator.jwks = (0, _jwkToPem.default)(response.data.keys[response.data.keys.length - 1]);
-    return;
+    TokenValidator.jwks[poolConfiguration.poolId] = (0, _jwkToPem.default)(response.data.keys[response.data.keys.length - 1]);
+    return TokenValidator.jwks[poolConfiguration.poolId];
   }
   throw new _JWTKeysIsNotSetOrInvalidError.default();
 });
-_defineProperty(TokenValidator, "validate", function (token) {
-  if (!TokenValidator.jwks) {
-    throw new _ConfigurationNotLoadedError.default();
+_defineProperty(TokenValidator, "loadConfiguration", async function ({
+  oAuth2IssuerBaseUrl,
+  poolsConfiguration
+}) {
+  if (!oAuth2IssuerBaseUrl || typeof oAuth2IssuerBaseUrl !== 'string') {
+    throw new _BadFieldError.default("OAuth2 Issuer was not sent or is invalid. oAuth2IssuerBaseUrl must be a valid string URI.");
   }
+  if (!poolsConfiguration || !Array.isArray(poolsConfiguration) || poolsConfiguration.length === 0) {
+    throw new _BadFieldError.default("poolsConfiguration was not sent or is invalid. poolsConfiguration must be a valid array.");
+  }
+  const isInvalid = poolsConfiguration.some(poolConfiguration => {
+    TokenValidator.validatePoolsConfiguration(poolConfiguration);
+  });
+  if (isInvalid) {
+    throw new _BadFieldError.default("poolsConfiguration was not sent or is invalid. poolsConfiguration must be a valid array.");
+  }
+  poolsConfiguration.forEach(poolConfiguration => {
+    TokenValidator.poolsConfiguration[poolConfiguration.poolId] = poolConfiguration;
+  });
+  TokenValidator.oAuth2IssuerBaseUrl = oAuth2IssuerBaseUrl;
+});
+_defineProperty(TokenValidator, "validate", async function (token) {
   if (!token || typeof token !== 'string') {
     throw new _InvalidTokenTypeError.default();
   }
+  // get information from token using base64
+  const tokenDecoded = TokenValidator.mapToken(token);
+
+  //get user pool from iss
+  if (!tokenDecoded.poolId) {
+    throw new _InvalidTokenTypeError.default();
+  }
+  const tokenConfiguration = TokenValidator.poolsConfiguration[tokenDecoded.poolId];
+  if (!tokenConfiguration) {
+    throw new _ConfigurationNotLoadedError.default();
+  }
+  if (tokenConfiguration.clientId && !tokenConfiguration.clientId.includes(tokenDecoded.client_id)) {
+    return false;
+  }
+  const jwks = await TokenValidator.getJwks(TokenValidator.oAuth2IssuerBaseUrl, tokenConfiguration);
+  if (!jwks) {
+    throw new _JWTKeysIsNotSetOrInvalidError.default();
+  }
   try {
-    const decoded = (0, _jsonwebtoken.verify)(token, TokenValidator.jwks);
+    const decoded = verify(token, jwks);
     return !!decoded;
   } catch (error) {
     return false;
   }
 });
 _defineProperty(TokenValidator, "dispose", function () {
-  TokenValidator.issuer = null;
-  TokenValidator.jwks = null;
+  TokenValidator.jwks = {};
+  TokenValidator.poolsConfiguration = {};
+  TokenValidator.oAuth2IssuerBaseUrl = "";
 });
 var _default = TokenValidator;
 exports.default = _default;
