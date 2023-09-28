@@ -13,6 +13,7 @@ class TokenValidator {
     static jwks = {}
     static poolsConfiguration = {}
     static oAuth2IssuerBaseUrl = ""
+    static acceptMultiplePoolIds = false
 
     static getJwks = async function (oAuth2IssuerBaseUrl, poolConfiguration) {
         if (TokenValidator.jwks[poolConfiguration.poolId]) {
@@ -45,26 +46,29 @@ class TokenValidator {
         TokenValidator.poolsConfiguration[poolConfiguration.poolId] = poolConfiguration
     }
 
-    static loadConfiguration = async function ({ oAuth2IssuerBaseUrl, poolsConfiguration }) {
+    static loadConfiguration = async function ({ oAuth2IssuerBaseUrl, poolsConfiguration, acceptMultiplePoolIds = false }) {
         if (!oAuth2IssuerBaseUrl || typeof oAuth2IssuerBaseUrl !== 'string') {
             throw new BadFieldError("OAuth2 Issuer was not sent or is invalid. oAuth2IssuerBaseUrl must be a valid string URI.")
         }
 
-        if (!poolsConfiguration || !Array.isArray(poolsConfiguration) || poolsConfiguration.length === 0) {
+        if ((!poolsConfiguration || !Array.isArray(poolsConfiguration) || poolsConfiguration.length === 0) && !acceptMultiplePoolIds) {
             throw new BadFieldError("poolsConfiguration was not sent or is invalid. poolsConfiguration must be a valid array.")
         }
 
-        const isInvalid = poolsConfiguration.some((poolConfiguration) => { TokenValidator.validatePoolsConfiguration(poolConfiguration) })
+        if(!acceptMultiplePoolIds){
+            const isInvalid = poolsConfiguration.some((poolConfiguration) => { TokenValidator.validatePoolsConfiguration(poolConfiguration) })
 
-        if (isInvalid) {
-            throw new BadFieldError("poolsConfiguration was not sent or is invalid. poolsConfiguration must be a valid array.")
+            if (isInvalid) {
+                throw new BadFieldError("poolsConfiguration was not sent or is invalid. poolsConfiguration must be a valid array.")
+            }
+
+            poolsConfiguration.forEach((poolConfiguration) => {
+                TokenValidator.poolsConfiguration[poolConfiguration.poolId] = poolConfiguration
+            })
         }
-
-        poolsConfiguration.forEach((poolConfiguration) => {
-            TokenValidator.poolsConfiguration[poolConfiguration.poolId] = poolConfiguration
-        })
 
         TokenValidator.oAuth2IssuerBaseUrl = oAuth2IssuerBaseUrl
+        TokenValidator.acceptMultiplePoolIds = acceptMultiplePoolIds
     }
 
     static validatePoolsConfiguration(poolsConfiguration) {
@@ -87,7 +91,7 @@ class TokenValidator {
 
     static validate = async function (token) {
         token = token.replace('Bearer ', '');
-        
+
         if (!token || typeof token !== 'string') {
             throw new InvalidTokenError()
         }
@@ -99,7 +103,17 @@ class TokenValidator {
             throw new InvalidTokenError()
         }
         
-        const tokenConfiguration = TokenValidator.poolsConfiguration[tokenDecoded.poolId]
+        let tokenConfiguration = TokenValidator.poolsConfiguration[tokenDecoded.poolId]
+
+        if(!tokenConfiguration && TokenValidator.acceptMultiplePoolIds){
+            TokenValidator.addPoolConfiguration({
+                poolId: tokenDecoded.poolId,
+                tenant: "tenant",
+            })
+
+            tokenConfiguration = TokenValidator.poolsConfiguration[tokenDecoded.poolId]
+        }
+        
         
         if (!tokenConfiguration) {
             throw new ConfigurationNotLoadedError()
