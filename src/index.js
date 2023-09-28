@@ -1,15 +1,15 @@
-import axios from "axios"
-import jwt from "jsonwebtoken"
-import jwkToPem from 'jwk-to-pem'
-import BadFieldError from './errors/BadFieldError.js'
-import OAuthNotRespondingError from "./errors/OAuthNotRespondingError.js"
-import JWTKeysIsNotSetOrInvalidError from "./errors/JWTKeysIsNotSetOrInvalidError.js";
-import ConfigurationNotLoadedError from "./errors/ConfigurationNotLoadedError.js";
-import InvalidTokenError from "./errors/InvalidTokenTypeError.js";
+const axios = require("axios");
+const jwt = require("jsonwebtoken");
+const jwkToPem = require('jwk-to-pem');
+const BadFieldError = require('./errors/BadFieldError.js');
+const OAuthNotRespondingError = require("./errors/OAuthNotRespondingError.js");
+const JWTKeysIsNotSetOrInvalidError = require("./errors/JWTKeysIsNotSetOrInvalidError.js");
+const ConfigurationNotLoadedError = require("./errors/ConfigurationNotLoadedError.js");
+const InvalidTokenError = require("./errors/InvalidTokenTypeError.js");
 
 const {verify} = jwt
 
-export class TokenValidator {
+class TokenValidator {
     static jwks = {}
     static poolsConfiguration = {}
     static oAuth2IssuerBaseUrl = ""
@@ -35,6 +35,14 @@ export class TokenValidator {
         }
 
         throw new JWTKeysIsNotSetOrInvalidError()
+    }
+
+    static addPoolConfiguration = function (poolConfiguration) {
+        if (!poolConfiguration || !TokenValidator.validatePoolsConfiguration(poolConfiguration)) {
+            throw new BadFieldError("poolConfiguration was not sent or is invalid. poolConfiguration must be a valid object.")
+        }
+
+        TokenValidator.poolsConfiguration[poolConfiguration.poolId] = poolConfiguration
     }
 
     static loadConfiguration = async function ({ oAuth2IssuerBaseUrl, poolsConfiguration }) {
@@ -78,6 +86,8 @@ export class TokenValidator {
     }
 
     static validate = async function (token) {
+        token = token.replace('Bearer ', '');
+        
         if (!token || typeof token !== 'string') {
             throw new InvalidTokenError()
         }
@@ -88,7 +98,6 @@ export class TokenValidator {
         if (!tokenDecoded.poolId) {
             throw new InvalidTokenError()
         }
-
         
         const tokenConfiguration = TokenValidator.poolsConfiguration[tokenDecoded.poolId]
         
@@ -122,4 +131,4 @@ export class TokenValidator {
     }
 }
 
-export default TokenValidator
+module.exports = TokenValidator

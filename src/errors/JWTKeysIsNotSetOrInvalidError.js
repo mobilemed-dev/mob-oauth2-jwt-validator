@@ -4,4 +4,4 @@ class JWTKeysIsNotSetOrInvalidError extends Error {
     }
 }
 
-export default JWTKeysIsNotSetOrInvalidError
+module.exports = JWTKeysIsNotSetOrInvalidError

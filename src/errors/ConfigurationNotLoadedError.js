@@ -4,4 +4,4 @@ class ConfigurationNotLoadedError extends Error {
     }
 }
 
-export default ConfigurationNotLoadedError
+module.exports = ConfigurationNotLoadedError

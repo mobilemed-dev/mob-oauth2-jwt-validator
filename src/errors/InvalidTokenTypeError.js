@@ -4,4 +4,4 @@ class InvalidTokenError extends Error {
     }
 }
 
-export default InvalidTokenError
+module.exports = InvalidTokenError

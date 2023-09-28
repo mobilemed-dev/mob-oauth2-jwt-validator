@@ -4,4 +4,4 @@ class OAuthNotRespondingError extends Error {
     }
 }
 
-export default OAuthNotRespondingError
+module.exports = OAuthNotRespondingError

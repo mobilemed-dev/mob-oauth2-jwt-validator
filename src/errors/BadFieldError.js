@@ -5,4 +5,4 @@ class BadFieldError extends Error {
     }
 }
 
-export default BadFieldError
+module.exports = BadFieldError
