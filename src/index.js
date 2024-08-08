@@ -86,6 +86,10 @@ class TokenValidator {
         const json = JSON.parse(decoded)
         json.poolId = json.iss.split('/')[3]
 
+        if(json.poolId === 'oauth') {
+            json.poolId = json.iss.split('/')[4]
+        }
+
         return json
     }
 
