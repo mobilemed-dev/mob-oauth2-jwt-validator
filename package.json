@@ -1,6 +1,6 @@
 {
   "name": "mob-oauth2-jwt-validator",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A package to validate JWT tokens from OAuth2 providers.",
   "main": "src/index.js",
   "scripts": {
